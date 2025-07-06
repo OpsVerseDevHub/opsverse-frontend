@@ -18,12 +18,12 @@ export default function Navbar() {
   }, []);
 
   return (
-    <header className="flex items-center justify-between bg-white p-3 shadow border-b relative">
+    <header className="flex items-center justify-between bg-white dark:bg-gray-800 p-3 shadow border-b relative">
       
       {/* Left */}
       <div className="flex items-center space-x-2">
         <Menu className="md:hidden" />
-        <h1 className="text-xl font-bold hidden md:block">OpsVerse Dashboard</h1>
+        <h1 className="text-xl font-bold text-gray-900 dark:text-white">OpsVerse Dashboard</h1>
       </div>
 
       {/* Center Search */}
@@ -39,10 +39,10 @@ export default function Navbar() {
       </div>
 
       {/* Right icons */}
-      <div className="flex items-center space-x-4 relative">
+      <div className="flex items-center space-x-4 relative ">
         
         <div className="relative" onClick={(e) => { e.stopPropagation(); setShowNotifications(!showNotifications); }}>
-          <Bell className="hover:text-blue-600 cursor-pointer" size={20} />
+          <Bell className="text-white group-hover:text-gray-700" size={20} />
           <span className="absolute top-0 right-0 h-2 w-2 bg-red-500 rounded-full"></span>
           {showNotifications && <NotificationDropdown />}
         </div>
