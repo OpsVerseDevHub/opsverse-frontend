@@ -1,47 +1,46 @@
-import { useSpaceStore } from "../state/spaceStore";
+import { useProjects } from "@/hooks/useProjects";
+import { useProjectStore } from "@/state/projectStore";
+import Skeleton from "./Skeleton";
 
-interface SpaceListProps {
-  isOpen: boolean;
-}
+const COLORS = [
+  "bg-green-500", "bg-red-500", "bg-yellow-500",
+  "bg-blue-500", "bg-purple-500", "bg-orange-500",
+];
 
-export default function SpaceList({ isOpen }: SpaceListProps) {
-  const { spaces, activeSpace, setActiveSpace } = useSpaceStore();
+export default function SpaceList() {
+  const { data: projects, isLoading } = useProjects();
+  const { activeProjectId, setActiveProject } = useProjectStore();
+
+  if (isLoading) {
+    return (
+      <div className="flex flex-col gap-2">
+        {[1, 2, 3].map((i) => <Skeleton key={i} height="h-8" />)}
+      </div>
+    );
+  }
+
+  if (!projects?.length) {
+    return <p className="text-xs text-gray-400 italic">No projects yet.</p>;
+  }
 
   return (
     <div className="flex flex-col gap-1">
-      {spaces.map((space) => (
+      {projects.map((project, i) => (
         <button
-          key={space}
-          onClick={() => setActiveSpace(space)}
-          className={`flex items-center px-4 py-2 text-sm rounded ${
-            activeSpace === space ? "bg-blue-100 font-semibold" : "hover:bg-gray-100"
+          key={project.id}
+          onClick={() => setActiveProject(project.id)}
+          className={`flex items-center px-2 py-2 text-sm rounded transition ${
+            activeProjectId === project.id
+              ? "bg-blue-100 font-semibold text-blue-800"
+              : "hover:bg-gray-100 text-gray-700"
           }`}
         >
-          <div className={`w-6 h-6 rounded-full flex items-center justify-center text-white mr-3 ${
-            colorForSpace(space)
-          }`}>
-            {space[0]}
+          <div className={`w-6 h-6 rounded-full flex items-center justify-center text-white text-xs mr-3 shrink-0 ${COLORS[i % COLORS.length]}`}>
+            {project.name[0].toUpperCase()}
           </div>
-          {isOpen && <span>{space}</span>}
+          <span className="truncate">{project.name}</span>
         </button>
       ))}
-      <button className="flex items-center px-4 py-2 text-sm text-blue-500 hover:underline mt-2">
-        + Add Space
-      </button>
     </div>
   );
 }
-
-function colorForSpace(space: string) {
-  const map: Record<string, string> = {
-    Marketing: "bg-green-500",
-    Product: "bg-red-500",
-    Engineering: "bg-yellow-500",
-    Design: "bg-blue-500",
-    Finance: "bg-purple-500",
-    HR: "bg-orange-500",
-  };
-
-  return map[space] || "bg-gray-400";
-}
-

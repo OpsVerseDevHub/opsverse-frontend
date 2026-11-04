@@ -10,6 +10,12 @@ body {
   @apply bg-gray-100 text-gray-900;
 }
 
+@layer components {
+  .nav-item {
+    @apply block py-2 px-2 rounded text-sm text-gray-700 hover:bg-gray-200 transition;
+  }
+}
+
 @layer utilities {
   .animate-fade-in {
     animation: fadeIn 0.3s ease-out;
