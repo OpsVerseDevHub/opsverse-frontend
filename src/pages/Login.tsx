@@ -1,111 +1,185 @@
-import { useState } from "react";
-import { useNavigate, Link } from "react-router-dom";
-import axios from "axios";
+import { useState, type FormEvent } from "react";
+import { Link, useNavigate } from "react-router-dom";
 import { useAuthStore } from "@/state/authStore";
 import api from "@/lib/api";
-import type { LoginResponse, User } from "@/lib/types";
+import { Zap, Github, Eye, EyeOff, ArrowRight } from "lucide-react";
+
+const API_BASE = import.meta.env.VITE_API_URL ?? "http://localhost:8000";
 
 export default function Login() {
   const [username, setUsername] = useState("");
   const [password, setPassword] = useState("");
-  const [error, setError] = useState("");
-  const [loading, setLoading] = useState(false);
-  const { setAuth } = useAuthStore();
+  const [showPw, setShowPw]     = useState(false);
+  const [loading, setLoading]   = useState(false);
+  const [error, setError]       = useState("");
+  const { setAccessToken, setUser } = useAuthStore();
   const navigate = useNavigate();
 
-  const handleSubmit = async (e: React.FormEvent) => {
+  const handleSubmit = async (e: FormEvent) => {
     e.preventDefault();
-    setError("");
     setLoading(true);
+    setError("");
     try {
-      const form = new URLSearchParams();
+      const form = new FormData();
       form.append("username", username);
       form.append("password", password);
-
-      const { data } = await axios.post<LoginResponse>(
-        `${import.meta.env.VITE_API_URL ?? "http://localhost:8000"}/token`,
-        form,
-        { headers: { "Content-Type": "application/x-www-form-urlencoded" } }
-      );
-
-      // Temporarily store token so /users/me call succeeds
-      useAuthStore.getState().setAccessToken(data.access_token);
-
-      const { data: user } = await api.get<User>("/users/me");
-      setAuth(user, data.access_token);
+      const { data } = await api.post("/token", form, {
+        headers: { "Content-Type": "application/x-www-form-urlencoded" },
+      });
+      setAccessToken(data.access_token);
+      const me = await api.get("/users/me");
+      setUser(me.data);
       navigate("/");
     } catch {
-      setError("Invalid username or password.");
+      setError("Invalid credentials. Try again.");
     } finally {
       setLoading(false);
     }
   };
 
   return (
-    <div className="min-h-screen flex items-center justify-center bg-gray-50">
-      <div className="bg-white shadow rounded-lg p-8 w-full max-w-sm space-y-6">
-        <div>
-          <h1 className="text-2xl font-bold text-gray-900">OpsVerse</h1>
-          <p className="text-sm text-gray-500 mt-1">Sign in to your workspace</p>
+    <div
+      className="min-h-screen flex items-center justify-center p-4 relative overflow-hidden"
+      style={{ background: "var(--bg-base)" }}
+    >
+      {/* Background */}
+      <div className="absolute inset-0 pointer-events-none">
+        <div className="orb orb-violet" style={{ width: 700, height: 700, top: -250, left: -200 }} />
+        <div className="orb orb-cyan"   style={{ width: 600, height: 600, bottom: -200, right: -150 }} />
+        <div className="bg-grid absolute inset-0" />
+      </div>
+
+      {/* Card */}
+      <div
+        className="relative w-full max-w-sm rounded-2xl p-8 animate-slide-up"
+        style={{
+          background: "rgba(13,17,23,0.85)",
+          border: "1px solid rgba(255,255,255,0.08)",
+          backdropFilter: "blur(24px)",
+          boxShadow: "0 0 60px rgba(139,92,246,0.1), 0 32px 64px rgba(0,0,0,0.4)",
+        }}
+      >
+        {/* Logo */}
+        <div className="flex items-center gap-3 mb-8">
+          <div
+            className="w-10 h-10 rounded-xl flex items-center justify-center shrink-0"
+            style={{
+              background: "linear-gradient(135deg, #7c3aed, #4f46e5)",
+              boxShadow: "0 0 20px rgba(124,58,237,0.5)",
+            }}
+          >
+            <Zap size={20} className="text-white" />
+          </div>
+          <div>
+            <p className="font-bold text-base gradient-text">OpsVerse</p>
+            <p className="text-[10px] text-slate-500 leading-none mt-0.5">Dev Operations Platform</p>
+          </div>
         </div>
 
-        <form onSubmit={handleSubmit} className="space-y-4">
+        <h1 className="text-xl font-semibold text-slate-100 mb-1">Welcome back</h1>
+        <p className="text-sm text-slate-500 mb-6">Sign in to your workspace</p>
+
+        {/* GitHub OAuth */}
+        <a
+          href={`${API_BASE}/auth/github`}
+          className="flex items-center justify-center gap-2 w-full h-10 rounded-xl text-sm font-medium text-slate-200 transition-all duration-200 mb-4"
+          style={{
+            background: "rgba(255,255,255,0.05)",
+            border: "1px solid rgba(255,255,255,0.1)",
+          }}
+          onMouseEnter={(e) => {
+            (e.currentTarget as HTMLElement).style.background = "rgba(255,255,255,0.08)";
+            (e.currentTarget as HTMLElement).style.borderColor = "rgba(255,255,255,0.15)";
+          }}
+          onMouseLeave={(e) => {
+            (e.currentTarget as HTMLElement).style.background = "rgba(255,255,255,0.05)";
+            (e.currentTarget as HTMLElement).style.borderColor = "rgba(255,255,255,0.1)";
+          }}
+        >
+          <Github size={16} />
+          Continue with GitHub
+        </a>
+
+        {/* Divider */}
+        <div className="flex items-center gap-3 mb-4">
+          <div className="flex-1 h-px" style={{ background: "rgba(255,255,255,0.07)" }} />
+          <span className="text-xs text-slate-600">or</span>
+          <div className="flex-1 h-px" style={{ background: "rgba(255,255,255,0.07)" }} />
+        </div>
+
+        {/* Form */}
+        <form onSubmit={handleSubmit} className="flex flex-col gap-3">
+          {error && (
+            <div
+              className="text-xs text-red-400 px-3 py-2 rounded-lg"
+              style={{ background: "rgba(239,68,68,0.1)", border: "1px solid rgba(239,68,68,0.2)" }}
+            >
+              {error}
+            </div>
+          )}
+
           <div>
-            <label className="block text-sm font-medium text-gray-700 mb-1">Username</label>
+            <label className="block text-xs text-slate-500 mb-1.5 font-medium">Username</label>
             <input
               type="text"
               value={username}
               onChange={(e) => setUsername(e.target.value)}
-              className="w-full border rounded-md px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
+              placeholder="yourname"
               required
-              autoFocus
-            />
-          </div>
-          <div>
-            <label className="block text-sm font-medium text-gray-700 mb-1">Password</label>
-            <input
-              type="password"
-              value={password}
-              onChange={(e) => setPassword(e.target.value)}
-              className="w-full border rounded-md px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
-              required
+              className="w-full h-10 px-3 rounded-xl text-sm text-slate-100 placeholder-slate-600 outline-none transition-all duration-200"
+              style={{
+                background: "rgba(255,255,255,0.04)",
+                border: "1px solid rgba(255,255,255,0.08)",
+              }}
+              onFocus={(e) => { e.currentTarget.style.borderColor = "rgba(139,92,246,0.5)"; e.currentTarget.style.boxShadow = "0 0 0 2px rgba(139,92,246,0.1)"; }}
+              onBlur={(e)  => { e.currentTarget.style.borderColor = "rgba(255,255,255,0.08)"; e.currentTarget.style.boxShadow = "none"; }}
             />
           </div>
 
-          {error && <p className="text-sm text-red-500">{error}</p>}
+          <div>
+            <label className="block text-xs text-slate-500 mb-1.5 font-medium">Password</label>
+            <div className="relative">
+              <input
+                type={showPw ? "text" : "password"}
+                value={password}
+                onChange={(e) => setPassword(e.target.value)}
+                placeholder="••••••••"
+                required
+                className="w-full h-10 px-3 pr-10 rounded-xl text-sm text-slate-100 placeholder-slate-600 outline-none transition-all duration-200"
+                style={{
+                  background: "rgba(255,255,255,0.04)",
+                  border: "1px solid rgba(255,255,255,0.08)",
+                }}
+                onFocus={(e) => { e.currentTarget.style.borderColor = "rgba(139,92,246,0.5)"; e.currentTarget.style.boxShadow = "0 0 0 2px rgba(139,92,246,0.1)"; }}
+                onBlur={(e)  => { e.currentTarget.style.borderColor = "rgba(255,255,255,0.08)"; e.currentTarget.style.boxShadow = "none"; }}
+              />
+              <button
+                type="button"
+                onClick={() => setShowPw((p) => !p)}
+                className="absolute right-3 top-1/2 -translate-y-1/2 text-slate-500 hover:text-slate-300"
+              >
+                {showPw ? <EyeOff size={14} /> : <Eye size={14} />}
+              </button>
+            </div>
+          </div>
 
           <button
             type="submit"
             disabled={loading}
-            className="w-full bg-blue-600 text-white rounded-md py-2 text-sm font-medium hover:bg-blue-700 disabled:opacity-50 transition"
+            className="btn-neon w-full h-10 rounded-xl text-sm font-medium flex items-center justify-center gap-2 mt-1 disabled:opacity-60"
           >
-            {loading ? "Signing in…" : "Sign in"}
+            {loading ? (
+              <span className="w-4 h-4 border-2 border-white/30 border-t-white rounded-full animate-spin-slow" />
+            ) : (
+              <>Sign in <ArrowRight size={15} /></>
+            )}
           </button>
         </form>
 
-        <div className="relative">
-          <div className="absolute inset-0 flex items-center">
-            <div className="w-full border-t border-gray-200" />
-          </div>
-          <div className="relative flex justify-center text-xs text-gray-400">
-            <span className="bg-white px-2">or</span>
-          </div>
-        </div>
-
-        <a
-          href={`${import.meta.env.VITE_API_URL ?? "http://localhost:8000"}/auth/github`}
-          className="flex items-center justify-center gap-2 w-full border border-gray-300 rounded-md py-2 text-sm font-medium text-gray-700 hover:bg-gray-50 transition"
-        >
-          <svg viewBox="0 0 24 24" className="w-4 h-4" fill="currentColor">
-            <path d="M12 0C5.37 0 0 5.37 0 12c0 5.31 3.435 9.795 8.205 11.385.6.105.825-.255.825-.57 0-.285-.015-1.23-.015-2.235-3.015.555-3.795-.735-4.035-1.41-.135-.345-.72-1.41-1.23-1.695-.42-.225-1.02-.78-.015-.795.945-.015 1.62.87 1.845 1.23 1.08 1.815 2.805 1.305 3.495.99.105-.78.42-1.305.765-1.605-2.67-.3-5.46-1.335-5.46-5.925 0-1.305.465-2.385 1.23-3.225-.12-.3-.54-1.53.12-3.18 0 0 1.005-.315 3.3 1.23.96-.27 1.98-.405 3-.405s2.04.135 3 .405c2.295-1.56 3.3-1.23 3.3-1.23.66 1.65.24 2.88.12 3.18.765.84 1.23 1.905 1.23 3.225 0 4.605-2.805 5.625-5.475 5.925.435.375.81 1.095.81 2.22 0 1.605-.015 2.895-.015 3.3 0 .315.225.69.825.57A12.02 12.02 0 0 0 24 12c0-6.63-5.37-12-12-12z" />
-          </svg>
-          Sign in with GitHub
-        </a>
-
-        <p className="text-sm text-center text-gray-500">
+        <p className="text-xs text-slate-600 text-center mt-5">
           No account?{" "}
-          <Link to="/register" className="text-blue-600 hover:underline">
-            Register
+          <Link to="/register" className="text-violet-400 hover:text-violet-300 transition-colors">
+            Create one
           </Link>
         </p>
       </div>
