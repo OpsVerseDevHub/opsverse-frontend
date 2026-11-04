@@ -1,138 +1,351 @@
-import { NavLink, useNavigate } from "react-router-dom";
+import { useState, useEffect } from "react";
+import { NavLink, useNavigate, useLocation } from "react-router-dom";
 import {
-  LayoutDashboard, Inbox, Layers, Users, Settings,
-  MessageSquare, Activity, LogOut, Zap,
+  LayoutDashboard, Inbox, Activity, Layers, Settings,
+  LogOut, Zap, ChevronRight, Pin, PinOff,
+  Plus, ExternalLink, BarChart2,
 } from "lucide-react";
-import SpaceList from "./SpaceList";
 import { useAuthStore } from "@/state/authStore";
-import { useState } from "react";
+import { useProjects } from "@/hooks/useProjects";
+import { useProjectStore } from "@/state/projectStore";
 
-type Panel = "spaces" | "inbox" | "settings" | null;
+const W_COLLAPSED = 64;
+const W_EXPANDED  = 240;
 
-const NAV = [
-  { icon: LayoutDashboard, label: "Dashboard", to: "/",       panel: null       as Panel },
-  { icon: Inbox,           label: "Inbox",     to: "/inbox",  panel: null       as Panel },
-  { icon: Activity,        label: "Activity",  to: "/messages", panel: null     as Panel },
-  { icon: Layers,          label: "Boards",    to: null,      panel: "spaces"   as Panel },
+const GRADIENTS = [
+  "linear-gradient(135deg,#7c3aed,#4f46e5)",
+  "linear-gradient(135deg,#0891b2,#06b6d4)",
+  "linear-gradient(135deg,#059669,#10b981)",
+  "linear-gradient(135deg,#d97706,#f59e0b)",
+  "linear-gradient(135deg,#be185d,#ec4899)",
+  "linear-gradient(135deg,#2563eb,#3b82f6)",
 ];
 
 export default function Sidebar() {
-  const [panel, setPanel] = useState<Panel>(null);
-  const { logout, user } = useAuthStore();
-  const navigate = useNavigate();
+  const [pinned, setPinned]       = useState(() => localStorage.getItem("sb-pin") === "1");
+  const [hovered, setHovered]     = useState(false);
+  const [boardsOpen, setBoardsOpen] = useState(false);
 
-  const toggle = (p: Panel) => setPanel((prev) => (prev === p ? null : p));
+  const expanded = pinned || hovered;
+
+  const { logout, user }                    = useAuthStore();
+  const { data: projects }                  = useProjects();
+  const { activeProjectId, setActiveProject } = useProjectStore();
+  const navigate                            = useNavigate();
+  const location                            = useLocation();
+
+  const isBoardActive = location.pathname.startsWith("/projects/");
+
+  useEffect(() => {
+    localStorage.setItem("sb-pin", pinned ? "1" : "0");
+  }, [pinned]);
+
+  // Auto-open boards accordion when on a board route
+  useEffect(() => {
+    if (isBoardActive) setBoardsOpen(true);
+  }, [isBoardActive]);
+
+  const labelStyle = (show: boolean): React.CSSProperties => ({
+    opacity: show ? 1 : 0,
+    transform: show ? "translateX(0)" : "translateX(-6px)",
+    transition: "opacity 0.18s ease, transform 0.18s ease",
+    whiteSpace: "nowrap",
+    overflow: "hidden",
+    pointerEvents: show ? "auto" : "none",
+  });
 
   return (
-    <div className="flex h-screen sticky top-0 z-40">
-      {/* Icon rail */}
-      <div className="w-16 flex flex-col items-center py-5 gap-1"
-           style={{ background: "rgba(6,10,20,0.95)", borderRight: "1px solid rgba(255,255,255,0.05)" }}>
+    <div
+      className="shrink-0 flex flex-col h-screen sticky top-0 z-40 overflow-hidden"
+      style={{
+        width: expanded ? W_EXPANDED : W_COLLAPSED,
+        transition: "width 0.25s cubic-bezier(0.4,0,0.2,1)",
+        background: "rgba(6,10,20,0.97)",
+        borderRight: "1px solid rgba(255,255,255,0.05)",
+      }}
+      onMouseEnter={() => !pinned && setHovered(true)}
+      onMouseLeave={() => !pinned && setHovered(false)}
+    >
+      {/* Inner content — always 240px wide; outer clips it when collapsed */}
+      <div className="flex flex-col h-full" style={{ width: W_EXPANDED }}>
 
-        {/* Logo */}
-        <div className="mb-5 w-9 h-9 rounded-xl gradient-violet flex items-center justify-center glow-violet-sm">
-          <Zap size={18} className="text-white" />
-        </div>
-
-        {/* Nav items */}
-        <div className="flex flex-col gap-1 flex-1 w-full px-2">
-          {NAV.map(({ icon: Icon, label, to, panel: p }) => {
-            const active = panel === p && p !== null;
-            if (to && !p) {
-              return (
-                <NavLink
-                  key={label}
-                  to={to}
-                  end={to === "/"}
-                  title={label}
-                  className={({ isActive }) =>
-                    `flex items-center justify-center w-full h-10 rounded-xl transition-all duration-200 group
-                     ${isActive
-                       ? "bg-violet-600/20 text-violet-400"
-                       : "text-slate-500 hover:text-slate-200 hover:bg-white/5"}`
-                  }
-                >
-                  <Icon size={20} />
-                </NavLink>
-              );
-            }
-            return (
-              <button
-                key={label}
-                onClick={() => toggle(p!)}
-                title={label}
-                className={`flex items-center justify-center w-full h-10 rounded-xl transition-all duration-200
-                  ${active
-                    ? "bg-violet-600/20 text-violet-400"
-                    : "text-slate-500 hover:text-slate-200 hover:bg-white/5"}`}
-              >
-                <Icon size={20} />
-              </button>
-            );
-          })}
-        </div>
-
-        {/* Bottom: settings + logout */}
-        <div className="flex flex-col gap-1 w-full px-2 pb-2">
-          <NavLink
-            to="/settings"
-            title="Settings"
-            className={({ isActive }) =>
-              `flex items-center justify-center w-full h-10 rounded-xl transition-all duration-200
-               ${isActive ? "text-violet-400 bg-violet-600/20" : "text-slate-500 hover:text-slate-200 hover:bg-white/5"}`
-            }
+        {/* ── Logo + pin ──────────────────────────────── */}
+        <div className="flex items-center gap-3 px-4 h-14 shrink-0">
+          <div
+            className="shrink-0 w-8 h-8 rounded-xl flex items-center justify-center"
+            style={{
+              background: "linear-gradient(135deg,#7c3aed,#4f46e5)",
+              boxShadow: "0 0 16px rgba(124,58,237,0.5)",
+            }}
           >
-            <Settings size={20} />
-          </NavLink>
+            <Zap size={16} className="text-white" />
+          </div>
+
+          <span className="font-bold text-sm gradient-text flex-1" style={labelStyle(expanded)}>
+            OpsVerse
+          </span>
+
+          {/* Pin / unpin */}
+          <button
+            onClick={() => { setPinned((p) => !p); setHovered(false); }}
+            className="shrink-0 w-6 h-6 flex items-center justify-center rounded-lg text-slate-600 hover:text-slate-300 hover:bg-white/5 transition-all"
+            title={pinned ? "Unpin sidebar" : "Pin sidebar"}
+            style={labelStyle(expanded)}
+          >
+            {pinned ? <PinOff size={13} /> : <Pin size={13} />}
+          </button>
+        </div>
+
+        {/* ── Divider ─────────────────────────────────── */}
+        <div className="mx-4 mb-3" style={{ height: 1, background: "rgba(255,255,255,0.05)" }} />
+
+        {/* ── Main nav ────────────────────────────────── */}
+        <nav className="flex-1 flex flex-col gap-0.5 px-2 overflow-y-auto overflow-x-hidden">
+
+          {/* Section label */}
+          <p
+            className="text-[9px] font-bold uppercase tracking-widest text-slate-700 px-3 mb-1"
+            style={labelStyle(expanded)}
+          >
+            Menu
+          </p>
+
+          <NavItem to="/" icon={LayoutDashboard} label="Dashboard" expanded={expanded} end />
+          <NavItem to="/inbox"    icon={Inbox}    label="Inbox"     expanded={expanded} />
+          <NavItem to="/messages" icon={Activity} label="Activity"  expanded={expanded} />
+
+          {/* Boards with accordion */}
+          <div>
+            <button
+              onClick={() => {
+                if (!expanded) {
+                  setHovered(true);
+                  setBoardsOpen(true);
+                } else {
+                  setBoardsOpen((o) => !o);
+                }
+              }}
+              className="relative w-full flex items-center gap-3 px-3 h-10 rounded-xl transition-all duration-150 group"
+              style={{
+                background: (isBoardActive || boardsOpen) ? "rgba(139,92,246,0.1)" : undefined,
+                color: (isBoardActive || boardsOpen) ? "#a78bfa" : "#64748b",
+              }}
+              onMouseEnter={(e) => {
+                if (!isBoardActive && !boardsOpen)
+                  (e.currentTarget as HTMLElement).style.background = "rgba(255,255,255,0.05)";
+              }}
+              onMouseLeave={(e) => {
+                if (!isBoardActive && !boardsOpen)
+                  (e.currentTarget as HTMLElement).style.background = "";
+              }}
+            >
+              {/* Active accent bar */}
+              {(isBoardActive || boardsOpen) && (
+                <span
+                  className="absolute left-0 top-2 bottom-2 w-0.5 rounded-full"
+                  style={{ background: "linear-gradient(to bottom,#8b5cf6,#06b6d4)" }}
+                />
+              )}
+
+              <div className="shrink-0 w-5 h-5 flex items-center justify-center">
+                <Layers size={18} />
+              </div>
+
+              <span className="text-sm font-medium flex-1 text-left" style={labelStyle(expanded)}>
+                Boards
+              </span>
+
+              <ChevronRight
+                size={13}
+                className="shrink-0 transition-transform duration-200"
+                style={{
+                  ...labelStyle(expanded),
+                  transform: boardsOpen
+                    ? "rotate(90deg)"
+                    : (expanded ? "rotate(0deg)" : "translateX(-6px)"),
+                }}
+              />
+            </button>
+
+            {/* Boards accordion content */}
+            <div
+              style={{
+                maxHeight: boardsOpen && expanded ? 300 : 0,
+                overflow: "hidden",
+                transition: "max-height 0.25s cubic-bezier(0.4,0,0.2,1)",
+              }}
+            >
+              <div className="pl-4 pr-2 pb-1 pt-0.5 flex flex-col gap-0.5">
+                {projects?.length ? (
+                  projects.map((project, i) => {
+                    const isActive = activeProjectId === project.id;
+                    return (
+                      <button
+                        key={project.id}
+                        onClick={() => {
+                          setActiveProject(project.id);
+                          navigate(`/projects/${project.id}/board`);
+                        }}
+                        className="flex items-center gap-2.5 w-full px-2 py-1.5 rounded-lg text-left transition-all duration-150"
+                        style={{
+                          background: isActive ? "rgba(139,92,246,0.15)" : undefined,
+                          color: isActive ? "#c4b5fd" : "#64748b",
+                        }}
+                        onMouseEnter={(e) => {
+                          if (!isActive) (e.currentTarget as HTMLElement).style.background = "rgba(255,255,255,0.05)";
+                          if (!isActive) (e.currentTarget as HTMLElement).style.color = "#e2e8f0";
+                        }}
+                        onMouseLeave={(e) => {
+                          if (!isActive) (e.currentTarget as HTMLElement).style.background = "";
+                          if (!isActive) (e.currentTarget as HTMLElement).style.color = "#64748b";
+                        }}
+                      >
+                        <div
+                          className="w-4 h-4 rounded-md shrink-0 flex items-center justify-center text-white"
+                          style={{ background: GRADIENTS[i % GRADIENTS.length], fontSize: 8, fontWeight: 700 }}
+                        >
+                          {project.name[0].toUpperCase()}
+                        </div>
+                        <span className="text-xs font-medium truncate">{project.name}</span>
+                        {isActive && <ExternalLink size={10} className="ml-auto shrink-0 opacity-50" />}
+                      </button>
+                    );
+                  })
+                ) : (
+                  <p className="text-[11px] text-slate-700 px-2 py-1">No projects yet</p>
+                )}
+
+                {/* New project shortcut */}
+                <button
+                  onClick={() => navigate("/")}
+                  className="flex items-center gap-2 px-2 py-1.5 rounded-lg text-[11px] text-slate-700 hover:text-slate-400 hover:bg-white/5 transition-all mt-0.5"
+                >
+                  <Plus size={12} />
+                  New project
+                </button>
+              </div>
+            </div>
+          </div>
+
+          {/* ── Section: Tools (future-ready placeholder) ── */}
+          <div className="mt-3">
+            <p
+              className="text-[9px] font-bold uppercase tracking-widest text-slate-700 px-3 mb-1"
+              style={labelStyle(expanded)}
+            >
+              Tools
+            </p>
+            <NavItem to="/reports"  icon={BarChart2} label="Reports"  expanded={expanded} />
+          </div>
+        </nav>
+
+        {/* ── Divider ─────────────────────────────────── */}
+        <div className="mx-4 mt-2" style={{ height: 1, background: "rgba(255,255,255,0.05)" }} />
+
+        {/* ── Bottom ──────────────────────────────────── */}
+        <div className="flex flex-col gap-0.5 px-2 py-3 shrink-0">
+          <NavItem to="/settings" icon={Settings} label="Settings" expanded={expanded} />
 
           <button
-            title="Sign out"
             onClick={() => { logout(); navigate("/login"); }}
-            className="flex items-center justify-center w-full h-10 rounded-xl text-slate-600 hover:text-red-400 hover:bg-red-500/10 transition-all duration-200"
+            title="Sign out"
+            className="relative flex items-center gap-3 w-full px-3 h-10 rounded-xl text-slate-600 hover:text-red-400 hover:bg-red-500/8 transition-all duration-150"
           >
-            <LogOut size={18} />
+            <div className="shrink-0 w-5 h-5 flex items-center justify-center">
+              <LogOut size={18} />
+            </div>
+            <span className="text-sm font-medium" style={labelStyle(expanded)}>Sign out</span>
           </button>
 
-          {/* User avatar */}
-          <div className="mt-2 flex items-center justify-center">
-            <div className="w-8 h-8 rounded-full gradient-violet flex items-center justify-center text-white text-xs font-bold ring-2 ring-violet-500/30">
+          {/* User card */}
+          <div
+            className="flex items-center gap-3 px-3 py-2 mt-1 rounded-xl transition-all duration-150"
+            style={{ background: "rgba(255,255,255,0.03)" }}
+          >
+            <div
+              className="shrink-0 w-7 h-7 rounded-lg flex items-center justify-center text-white text-xs font-bold"
+              style={{
+                background: "linear-gradient(135deg,#7c3aed,#4f46e5)",
+                boxShadow: "0 0 10px rgba(124,58,237,0.4)",
+              }}
+            >
               {user?.username?.[0]?.toUpperCase() ?? "U"}
+            </div>
+            <div className="min-w-0 flex-1" style={labelStyle(expanded)}>
+              <p className="text-xs font-semibold text-slate-200 truncate">{user?.username}</p>
+              <p className="text-[10px] text-slate-600 capitalize truncate">{user?.role}</p>
             </div>
           </div>
         </div>
-      </div>
 
-      {/* Slide-out panel */}
-      {panel && (
+      </div>
+    </div>
+  );
+}
+
+/* ── Reusable nav item ──────────────────────────────────────── */
+interface NavItemProps {
+  to:       string;
+  icon:     React.ElementType;
+  label:    string;
+  expanded: boolean;
+  end?:     boolean;
+}
+
+function NavItem({ to, icon: Icon, label, expanded, end }: NavItemProps) {
+  const labelStyle: React.CSSProperties = {
+    opacity: expanded ? 1 : 0,
+    transform: expanded ? "translateX(0)" : "translateX(-6px)",
+    transition: "opacity 0.18s ease, transform 0.18s ease",
+    whiteSpace: "nowrap",
+    overflow: "hidden",
+    pointerEvents: expanded ? "auto" : "none",
+  };
+
+  return (
+    <NavLink
+      to={to}
+      end={end}
+      title={!expanded ? label : undefined}
+      className="relative block"
+    >
+      {({ isActive }) => (
         <div
-          className="w-56 flex flex-col p-4 gap-2 animate-slide-in"
+          className="relative flex items-center gap-3 px-3 h-10 rounded-xl transition-all duration-150"
           style={{
-            background: "rgba(10,13,22,0.95)",
-            borderRight: "1px solid rgba(255,255,255,0.06)",
-            backdropFilter: "blur(20px)",
+            background: isActive ? "rgba(139,92,246,0.12)" : undefined,
+            color: isActive ? "#a78bfa" : "#64748b",
+          }}
+          onMouseEnter={(e) => {
+            if (!isActive) {
+              (e.currentTarget as HTMLElement).style.background = "rgba(255,255,255,0.05)";
+              (e.currentTarget as HTMLElement).style.color = "#e2e8f0";
+            }
+          }}
+          onMouseLeave={(e) => {
+            if (!isActive) {
+              (e.currentTarget as HTMLElement).style.background = "";
+              (e.currentTarget as HTMLElement).style.color = "#64748b";
+            }
           }}
         >
-          {panel === "spaces" && (
-            <>
-              <p className="text-xs font-semibold text-slate-500 uppercase tracking-widest mb-1">Projects</p>
-              <SpaceList />
-            </>
+          {/* Left accent bar */}
+          {isActive && (
+            <span
+              className="absolute left-0 top-2 bottom-2 w-0.5 rounded-full"
+              style={{ background: "linear-gradient(to bottom,#8b5cf6,#06b6d4)" }}
+            />
           )}
-          {panel === "inbox" && (
-            <>
-              <p className="text-xs font-semibold text-slate-500 uppercase tracking-widest mb-1">Inbox</p>
-              <NavLink to="/inbox"    onClick={() => setPanel(null)} className="nav-item flex items-center gap-2"><MessageSquare size={14}/>Slack Messages</NavLink>
-              <NavLink to="/messages" onClick={() => setPanel(null)} className="nav-item flex items-center gap-2"><Activity size={14}/>GitHub Activity</NavLink>
-            </>
-          )}
-          {panel === "settings" && (
-            <>
-              <p className="text-xs font-semibold text-slate-500 uppercase tracking-widest mb-1">Settings</p>
-              <NavLink to="/settings" onClick={() => setPanel(null)} className="nav-item">Preferences</NavLink>
-            </>
-          )}
+
+          <div className="shrink-0 w-5 h-5 flex items-center justify-center">
+            <Icon size={18} />
+          </div>
+
+          <span className="text-sm font-medium flex-1" style={labelStyle}>
+            {label}
+          </span>
         </div>
       )}
-    </div>
+    </NavLink>
   );
 }
