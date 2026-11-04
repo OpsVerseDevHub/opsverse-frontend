@@ -1,9 +1,11 @@
-import { Outlet } from "react-router-dom";
+import type { ReactNode } from "react";
 import Sidebar from "./Sidebar";
 import Navbar from "./Navbar";
 import { useWebSocket } from "@/hooks/useWebSocket";
 
-export default function Layout() {
+interface Props { children: ReactNode; }
+
+export default function Layout({ children }: Props) {
   useWebSocket();
 
   return (
@@ -21,7 +23,7 @@ export default function Layout() {
       <div className="flex flex-col flex-1 min-w-0 relative z-10">
         <Navbar />
         <main className="flex-1 overflow-y-auto p-6">
-          <Outlet />
+          {children}
         </main>
       </div>
     </div>
