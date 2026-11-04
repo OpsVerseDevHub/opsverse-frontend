@@ -70,3 +70,28 @@ export interface LoginResponse {
   access_token: string;
   token_type: string;
 }
+
+export interface GitHubActivityCommit {
+  hash: string;
+  message: string;
+  url?: string;
+}
+
+export interface GitHubActivitySummary {
+  pusher?: string;
+  ref?: string;
+  repo?: string;
+  commits?: GitHubActivityCommit[];
+  action?: string;
+  number?: number;
+  title?: string;
+  user?: string;
+  url?: string;
+}
+
+export interface GitHubActivity {
+  id: number;
+  event_type: string;
+  received_at: string;
+  summary: GitHubActivitySummary;
+}
