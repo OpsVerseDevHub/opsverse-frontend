@@ -12,7 +12,7 @@ export default function Login() {
   const [showPw, setShowPw]     = useState(false);
   const [loading, setLoading]   = useState(false);
   const [error, setError]       = useState("");
-  const { setAccessToken, setUser } = useAuthStore();
+  const { setAuth, setAccessToken } = useAuthStore();
   const navigate = useNavigate();
 
   const handleSubmit = async (e: FormEvent) => {
@@ -20,15 +20,15 @@ export default function Login() {
     setLoading(true);
     setError("");
     try {
-      const form = new FormData();
+      const form = new URLSearchParams();
       form.append("username", username);
       form.append("password", password);
-      const { data } = await api.post("/token", form, {
+      const { data } = await api.post("/token", form.toString(), {
         headers: { "Content-Type": "application/x-www-form-urlencoded" },
       });
       setAccessToken(data.access_token);
       const me = await api.get("/users/me");
-      setUser(me.data);
+      setAuth(me.data, data.access_token);
       navigate("/");
     } catch {
       setError("Invalid credentials. Try again.");
