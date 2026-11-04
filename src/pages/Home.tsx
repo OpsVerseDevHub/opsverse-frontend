@@ -16,7 +16,7 @@ const STATUS_COLORS: Record<string, string> = {
 };
 
 const CHART_TOOLTIP_STYLE = {
-  background: "rgba(13,17,23,0.95)",
+  background: "var(--bg-modal)",
   border: "1px solid rgba(255,255,255,0.08)",
   borderRadius: 8,
   color: "#e2e8f0",
@@ -82,7 +82,7 @@ export default function Home() {
         {/* Bar chart */}
         <div
           className="lg:col-span-2 rounded-2xl p-5"
-          style={{ background: "rgba(13,17,23,0.6)", border: "1px solid rgba(255,255,255,0.06)" }}
+          style={{ background: "var(--bg-card)", border: "1px solid var(--border-primary)" }}
         >
           <div className="flex items-center justify-between mb-4">
             <div>
@@ -98,7 +98,7 @@ export default function Home() {
               <BarChart data={barData} barSize={28}>
                 <XAxis dataKey="name" tick={{ fill: "#64748b", fontSize: 11 }} axisLine={false} tickLine={false} />
                 <YAxis allowDecimals={false} tick={{ fill: "#64748b", fontSize: 11 }} axisLine={false} tickLine={false} />
-                <Tooltip contentStyle={CHART_TOOLTIP_STYLE} cursor={{ fill: "rgba(255,255,255,0.03)" }} />
+                <Tooltip contentStyle={CHART_TOOLTIP_STYLE} cursor={{ fill: "var(--bg-hover)" }} />
                 <Bar dataKey="tasks" radius={[6,6,0,0]}>
                   {barData.map((entry, i) => {
                     const colors = ["#64748b","#3b82f6","#f59e0b","#10b981"];
@@ -113,7 +113,7 @@ export default function Home() {
         {/* Pie chart */}
         <div
           className="rounded-2xl p-5"
-          style={{ background: "rgba(13,17,23,0.6)", border: "1px solid rgba(255,255,255,0.06)" }}
+          style={{ background: "var(--bg-card)", border: "1px solid var(--border-primary)" }}
         >
           <div className="flex items-center justify-between mb-4">
             <div>
@@ -162,7 +162,7 @@ export default function Home() {
       {/* Inbox preview */}
       <div
         className="rounded-2xl p-5"
-        style={{ background: "rgba(13,17,23,0.6)", border: "1px solid rgba(255,255,255,0.06)" }}
+        style={{ background: "var(--bg-card)", border: "1px solid var(--border-primary)" }}
       >
         <div className="flex items-center justify-between mb-4">
           <div>
@@ -187,7 +187,7 @@ export default function Home() {
               <div
                 key={msg.id}
                 className="flex items-center justify-between px-3 py-2.5 rounded-xl transition-colors"
-                style={{ background: "rgba(255,255,255,0.03)", border: "1px solid rgba(255,255,255,0.05)" }}
+                style={{ background: "var(--bg-hover)", border: "1px solid var(--border-subtle)" }}
               >
                 <div className="flex items-center gap-3 min-w-0">
                   <div
@@ -223,8 +223,8 @@ function StatCard({ icon, label, value, gradient, glow }: StatCardProps) {
     <div
       className="rounded-2xl p-4 flex items-start justify-between transition-all duration-300 hover:-translate-y-0.5 cursor-default"
       style={{
-        background: "rgba(13,17,23,0.6)",
-        border: "1px solid rgba(255,255,255,0.06)",
+        background: "var(--bg-card)",
+        border: "1px solid var(--border-primary)",
       }}
       onMouseEnter={(e) => { (e.currentTarget as HTMLElement).style.boxShadow = glow; }}
       onMouseLeave={(e) => { (e.currentTarget as HTMLElement).style.boxShadow = "none"; }}

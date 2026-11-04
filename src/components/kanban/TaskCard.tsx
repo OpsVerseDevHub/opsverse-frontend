@@ -33,9 +33,9 @@ export default function TaskCard({ task, overlay, onClick }: Props) {
       style={{
         ...style,
         background: overlay
-          ? "rgba(20,25,38,0.98)"
-          : "rgba(13,17,23,0.75)",
-        border: "1px solid rgba(255,255,255,0.08)",
+          ? "var(--bg-modal)"
+          : "var(--bg-card)",
+        border: "1px solid var(--border-primary)",
         backdropFilter: "blur(12px)",
         transform: overlay
           ? `${CSS.Translate.toString(transform)} rotate(2deg) scale(1.03)`

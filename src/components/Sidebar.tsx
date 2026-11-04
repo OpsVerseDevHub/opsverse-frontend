@@ -8,6 +8,7 @@ import {
 import { useAuthStore } from "@/state/authStore";
 import { useProjects } from "@/hooks/useProjects";
 import { useProjectStore } from "@/state/projectStore";
+import NewProjectModal from "./NewProjectModal";
 
 const W_COLLAPSED = 64;
 const W_EXPANDED  = 240;
@@ -22,9 +23,10 @@ const GRADIENTS = [
 ];
 
 export default function Sidebar() {
-  const [pinned, setPinned]       = useState(() => localStorage.getItem("sb-pin") === "1");
-  const [hovered, setHovered]     = useState(false);
+  const [pinned, setPinned]         = useState(() => localStorage.getItem("sb-pin") === "1");
+  const [hovered, setHovered]       = useState(false);
   const [boardsOpen, setBoardsOpen] = useState(false);
+  const [showNewProject, setShowNewProject] = useState(false);
 
   const expanded = pinned || hovered;
 
@@ -55,13 +57,14 @@ export default function Sidebar() {
   });
 
   return (
+    <>
     <div
       className="shrink-0 flex flex-col h-screen sticky top-0 z-40 overflow-hidden"
       style={{
         width: expanded ? W_EXPANDED : W_COLLAPSED,
-        transition: "width 0.25s cubic-bezier(0.4,0,0.2,1)",
-        background: "rgba(6,10,20,0.97)",
-        borderRight: "1px solid rgba(255,255,255,0.05)",
+        transition: "width 0.25s cubic-bezier(0.4,0,0.2,1), background 0.3s ease",
+        background: "var(--bg-sidebar)",
+        borderRight: "1px solid var(--border-subtle)",
       }}
       onMouseEnter={() => !pinned && setHovered(true)}
       onMouseLeave={() => !pinned && setHovered(false)}
@@ -217,8 +220,17 @@ export default function Sidebar() {
 
                 {/* New project shortcut */}
                 <button
-                  onClick={() => navigate("/")}
-                  className="flex items-center gap-2 px-2 py-1.5 rounded-lg text-[11px] text-slate-700 hover:text-slate-400 hover:bg-white/5 transition-all mt-0.5"
+                  onClick={() => setShowNewProject(true)}
+                  className="flex items-center gap-2 px-2 py-1.5 rounded-lg text-[11px] transition-all mt-0.5"
+                  style={{ color: "var(--text-4)" }}
+                  onMouseEnter={(e) => {
+                    (e.currentTarget as HTMLElement).style.background = "var(--bg-hover)";
+                    (e.currentTarget as HTMLElement).style.color = "var(--accent-violet)";
+                  }}
+                  onMouseLeave={(e) => {
+                    (e.currentTarget as HTMLElement).style.background = "";
+                    (e.currentTarget as HTMLElement).style.color = "var(--text-4)";
+                  }}
                 >
                   <Plus size={12} />
                   New project
@@ -280,6 +292,9 @@ export default function Sidebar() {
 
       </div>
     </div>
+
+    {showNewProject && <NewProjectModal onClose={() => setShowNewProject(false)} />}
+  </>
   );
 }
 

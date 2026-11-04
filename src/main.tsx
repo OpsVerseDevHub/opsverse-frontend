@@ -4,6 +4,11 @@ import { BrowserRouter } from "react-router-dom";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import App from "./App";
 import "./index.css";
+import { useThemeStore } from "./state/themeStore";
+
+// Apply persisted theme before first render to avoid flash
+const savedTheme = useThemeStore.getState().theme;
+document.documentElement.setAttribute("data-theme", savedTheme);
 
 const queryClient = new QueryClient({
   defaultOptions: {

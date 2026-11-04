@@ -60,7 +60,7 @@ export default function KanbanColumn({ status, label, tasks, projectId }: Props)
           style={{
             background: isOver
               ? `rgba(${cfg.accent.replace("#", "").match(/.{2}/g)?.map(h => parseInt(h,16)).join(",")},0.08)`
-              : "rgba(13,17,23,0.4)",
+              : "var(--bg-card)",
             border: `1px solid ${isOver ? cfg.accent + "40" : "rgba(255,255,255,0.05)"}`,
             boxShadow: isOver ? `inset 0 0 20px ${cfg.glow}` : undefined,
           }}
