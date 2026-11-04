@@ -2,6 +2,7 @@ import { Routes, Route, Navigate } from "react-router-dom";
 import Layout from "@/components/Layout";
 import ProtectedRoute from "@/components/ProtectedRoute";
 import Home from "@/pages/Home";
+import Board from "@/pages/Board";
 import InboxPage from "@/pages/Inbox";
 import Messages from "@/pages/Messages";
 import Reports from "@/pages/Reports";
@@ -21,6 +22,7 @@ export default function App() {
         <Route path="/messages" element={<Layout><Messages /></Layout>} />
         <Route path="/reports" element={<Layout><Reports /></Layout>} />
         <Route path="/settings" element={<Layout><Settings /></Layout>} />
+        <Route path="/projects/:id/board" element={<Layout><Board /></Layout>} />
         {/* Legacy redirect */}
         <Route path="/dashboard" element={<Navigate to="/" replace />} />
       </Route>

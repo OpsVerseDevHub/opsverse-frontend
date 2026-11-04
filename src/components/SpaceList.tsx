@@ -1,3 +1,4 @@
+import { useNavigate } from "react-router-dom";
 import { useProjects } from "@/hooks/useProjects";
 import { useProjectStore } from "@/state/projectStore";
 import Skeleton from "./Skeleton";
@@ -10,6 +11,7 @@ const COLORS = [
 export default function SpaceList() {
   const { data: projects, isLoading } = useProjects();
   const { activeProjectId, setActiveProject } = useProjectStore();
+  const navigate = useNavigate();
 
   if (isLoading) {
     return (
@@ -28,7 +30,7 @@ export default function SpaceList() {
       {projects.map((project, i) => (
         <button
           key={project.id}
-          onClick={() => setActiveProject(project.id)}
+          onClick={() => { setActiveProject(project.id); navigate(`/projects/${project.id}/board`); }}
           className={`flex items-center px-2 py-2 text-sm rounded transition ${
             activeProjectId === project.id
               ? "bg-blue-100 font-semibold text-blue-800"
