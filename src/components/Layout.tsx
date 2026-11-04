@@ -1,9 +1,11 @@
-// components/Layout.tsx
 import Sidebar from "@/components/Sidebar";
 import Navbar from "@/components/Navbar";
+import { useWebSocket } from "@/hooks/useWebSocket";
 import type { ReactNode } from "react";
 
 export default function Layout({ children }: { children: ReactNode }) {
+  useWebSocket();
+
   return (
     <div className="flex">
       <Sidebar />
