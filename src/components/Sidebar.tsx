@@ -3,7 +3,7 @@ import { NavLink, useNavigate, useLocation } from "react-router-dom";
 import {
   LayoutDashboard, Inbox, Activity, Layers, Settings,
   LogOut, Zap, ChevronRight, Pin, PinOff,
-  Plus, ExternalLink, BarChart2,
+  Plus, ExternalLink, BarChart2, Sparkles,
 } from "lucide-react";
 import { useAuthStore } from "@/state/authStore";
 import { useProjects } from "@/hooks/useProjects";
@@ -248,6 +248,7 @@ export default function Sidebar() {
               Tools
             </p>
             <NavItem to="/reports"  icon={BarChart2} label="Reports"  expanded={expanded} />
+            <NavItem to="/copilot"  icon={Sparkles}  label="AI Co-Pilot" expanded={expanded} />
           </div>
         </nav>
 

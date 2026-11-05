@@ -7,6 +7,7 @@ import InboxPage from "@/pages/Inbox";
 import Messages from "@/pages/Messages";
 import Reports from "@/pages/Reports";
 import Settings from "@/pages/Settings";
+import Copilot from "@/pages/Copilot";
 import Login from "@/pages/Login";
 import Register from "@/pages/Register";
 import AuthCallback from "@/pages/AuthCallback";
@@ -24,6 +25,7 @@ export default function App() {
         <Route path="/messages" element={<Layout><Messages /></Layout>} />
         <Route path="/reports" element={<Layout><Reports /></Layout>} />
         <Route path="/settings" element={<Layout><Settings /></Layout>} />
+        <Route path="/copilot" element={<Layout><Copilot /></Layout>} />
         <Route path="/projects/:id/board" element={<Layout><Board /></Layout>} />
         {/* Legacy redirect */}
         <Route path="/dashboard" element={<Navigate to="/" replace />} />
