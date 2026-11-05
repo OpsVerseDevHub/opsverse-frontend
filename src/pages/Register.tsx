@@ -51,7 +51,7 @@ export default function Register() {
   return (
     <div
       className="min-h-screen flex items-center justify-center p-4 relative overflow-hidden"
-      style={{ background: "var(--bg-base)" }}
+      style={{ background: "#060a14" }}
     >
       <div className="absolute inset-0 pointer-events-none">
         <div className="orb orb-cyan"   style={{ width: 700, height: 700, top: -250, right: -200 }} />
@@ -62,7 +62,7 @@ export default function Register() {
       <div
         className="relative w-full max-w-sm rounded-2xl p-8 animate-slide-up"
         style={{
-          background: "var(--bg-modal)",
+          background: "rgba(10,13,20,0.98)",
           border: "1px solid rgba(255,255,255,0.08)",
           backdropFilter: "blur(24px)",
           boxShadow: "0 0 60px rgba(6,182,212,0.08), 0 32px 64px rgba(0,0,0,0.4)",

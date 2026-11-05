@@ -40,7 +40,7 @@ export default function Login() {
   return (
     <div
       className="min-h-screen flex items-center justify-center p-4 relative overflow-hidden"
-      style={{ background: "var(--bg-base)" }}
+      style={{ background: "#060a14" }}
     >
       {/* Background */}
       <div className="absolute inset-0 pointer-events-none">
@@ -53,7 +53,7 @@ export default function Login() {
       <div
         className="relative w-full max-w-sm rounded-2xl p-8 animate-slide-up"
         style={{
-          background: "var(--bg-modal)",
+          background: "rgba(10,13,20,0.98)",
           border: "1px solid rgba(255,255,255,0.08)",
           backdropFilter: "blur(24px)",
           boxShadow: "0 0 60px rgba(139,92,246,0.1), 0 32px 64px rgba(0,0,0,0.4)",
